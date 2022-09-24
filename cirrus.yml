@@ -9,7 +9,7 @@ task:
           - /home/cirrus/roms:/home/cirrus/roms
           - /home/cirrus/ccache:/home/cirrus/ccache
           - /home/cirrus/.config:/home/cirrus/.config
-    run_script: # To sync sourcea
+    run_script: # To sync sourcea 
       - apt update && DEBIAN_FRONTEND="noninteractive" TZ="Asia/Makassar" apt-get install -y tzdata curl git sudo
       - bash <(curl https://raw.githubusercontent.com/dtyghc/setup-/main/Setup.sh)
       - git config --global user.name officialputuid
