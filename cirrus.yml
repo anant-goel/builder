@@ -1,0 +1,33 @@
+task:
+    name: buildbot
+    timeout_in: 7h
+    container:
+      image: ubuntu:latest
+      cpu: 8
+      memory: 32G
+      volumes:
+          - /home/cirrus/roms:/home/cirrus/roms
+          - /home/cirrus/ccache:/home/cirrus/ccache
+          - /home/cirrus/.config:/home/cirrus/.config
+    run_script: # To sync sourcea
+      - apt update && DEBIAN_FRONTEND="noninteractive" TZ="Asia/Makassar" apt-get install -y tzdata curl git sudo
+      - bash <(curl https://raw.githubusercontent.com/dtyghc/setup-/main/Setup.sh)
+      - git config --global user.name officialputuid
+      - git config --global user.email officialputuid@hack.id
+      - /usr/local/bin/repo init --depth=1 --no-repo-verify -u https://github.com/xdroid-oss/xd_manifest.git -b twelve -g default,-mips,-darwin,-notdefault
+      - git clone https://github.com/dtyghc/local_manifest.git --depth=1 -b evo-13 .repo/local_manifests
+      - /usr/local/bin/repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j8
+      - export CCACHE_EXEC=$(which ccache)
+      - export USE_CCACHE=1
+      - ccache -M 50G
+      - ccache -z
+      - export WITH_GAPPS=true
+      - export KBUILD_BUILD_USER=Anant
+      - export KBUILD_BUILD_HOST=81
+      - export BUILD_USERNAME=Anant_1
+      - export BUILD_HOSTNAME=81
+      - source build/envsetup.sh
+      - lunch evolution_Mi439-userdebug
+      - mka evolution -j8
+      - up=out/target/product/Mi439/*.zip
+      - curl --upload-file $up https://transfer.sh/$($up); echo
